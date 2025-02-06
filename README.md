@@ -1,6 +1,6 @@
 # Merging-Based Quantum Repeater
 
-ADD ZENODO DOI
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14824315.svg)](https://doi.org/10.5281/zenodo.14824315)
 
 This code corresponds to the scenarios and settings described in
 
