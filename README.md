@@ -6,7 +6,7 @@ This code corresponds to the scenarios and settings described in
 
 > Merging-Based Quantum Repeater <br>
 > Maria Flors Mor-Ruiz, Jorge Miguel-Ramiro, Julius Wallnöfer, Tim Coopmans, and Wolfgang Dür <br>
-    > Preprint: [arXiv:? [quant-ph]](ADD LINK);
+> Preprint: [arXiv:2502.04450 [quant-ph]](https://doi.org/10.48550/arXiv.2502.04450);
 
 
 ## Requirements
