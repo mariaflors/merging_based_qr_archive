@@ -1,6 +1,6 @@
 """
-This script plots the secret key rate in terms of the total distance for both the merging- and the swapping-based
-protocols from the generated data.
+This script plots the secret key rate/raw rate/secret key fraction/fidelity  in terms of the total distance for both the
+merging- and the swapping-based protocols from the generated data.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,8 +17,8 @@ marker_size = 7
 
 
 def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="skr", num=50, save=False, path=''):
-    """This function plots the averaged data of the chosen rate (secret ket rate, secret key fraction or raw rate),
-    given a set of total distances for both the merging-based and the swapping-based protocols.
+    """This function plots the averaged data of the chosen rate (secret ket rate, secret key fraction, raw rate, or
+    fidelity), given a set of total distances for both the merging-based and the swapping-based protocols.
 
     Parameters
     ---------
@@ -35,24 +35,25 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
     patches: list of int
         List of the limits to at what size of the cluster can the patching be attempted.
     rate : str
-        Parameter to be plotted, can take three values:
+        Parameter to be plotted, can take four values:
         "skr" --> secret key rate,
         "skf" --> secret key fraction,
-        "rr"  --> raw rate.
+        "rr"  --> raw rate,
+        "fid" --> fidelity.
         Default is "skr".
     num : int
         Number of points per data series. Default is 50.
     save : True or False
-        If True, the outcomes are saved in a .npy file. Default is False.
+        If True, the outcomes are saved in a .pdf file. Default is False.
     path : str
-        Specification on where to save the .npy file. Default is ''.
+        Specification on where to save the .pdf file. Default is ''.
     """
-    if rate != "skr" and rate != "skf" and rate != "rr":
+    if rate != "skr" and rate != "skf" and rate != "rr" and rate != "fid":
         raise ValueError("The entered rate is not correct")
     fig, ax = plt.subplots(figsize=[6.4, 4.8])
     # Series of different `k`.
     for j, k in enumerate(ks):
-        data_sb = np.load(f"results/skr_td_sb_k={k}_p={p}_T={dephasing_time}_td={total_distances[-1]}.npy")
+        data_sb = np.load(f"results/skr_fid_td_sb_k={k}_p={p}_T={dephasing_time}_td={total_distances[-1]}.npy")
         td_sb = data_sb[0]
         wt_sb = data_sb[1]
         std_wt_sb = data_sb[2]
@@ -60,6 +61,8 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
         std_ez_sb = data_sb[4]
         ex_sb = data_sb[5]
         std_ex_sb = data_sb[6]
+        fid_sb = data_sb[7]
+        std_fid_sb = data_sb[8]
         td_eb = [[[] for __ in patches] for __ in growths]
         wt_eb = [[[] for __ in patches] for __ in growths]
         std_wt_eb = [[[] for __ in patches] for __ in growths]
@@ -67,10 +70,12 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
         std_ez_eb = [[[] for __ in patches] for __ in growths]
         ex_eb = [[[] for __ in patches] for __ in growths]
         std_ex_eb = [[[] for __ in patches] for __ in growths]
+        fid_eb = [[[] for __ in patches] for __ in growths]
+        std_fid_eb = [[[] for __ in patches] for __ in growths]
         for i, growth in enumerate(growths):
             for l, patch in enumerate(patches):
                 data_eb = np.load(
-                    f"results/skr_td_mb_k={k}_p={p}_T={dephasing_time}_g={growth}_plim={patch}_td={total_distances[-1]}.npy")
+                    f"results/skr_fid_td_mb_k={k}_p={p}_T={dephasing_time}_g={growth}_plim={patch}_td={total_distances[-1]}.npy")
                 td_eb[i][l] = data_eb[0]
                 wt_eb[i][l] = data_eb[1]
                 std_wt_eb[i][l] = data_eb[2]
@@ -78,6 +83,8 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
                 std_ez_eb[i][l] = data_eb[4]
                 ex_eb[i][l] = data_eb[5]
                 std_ex_eb[i][l] = data_eb[6]
+                fid_eb[i][l] = data_eb[7]
+                std_fid_eb[i][l] = data_eb[8]
 
         eb = [[[] for __ in patches] for __ in growths]
         sb = []
@@ -125,6 +132,14 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
                 result_sb = raw_rate(wt=wt_sb[i], d_wt=std_wt_sb[i], distance=td_sb[i] / 2 ** k)
                 sb.append(result_sb[0])
                 d_sb.append(result_sb[1])
+            elif rate == "fid":
+                # Plot fidelity
+                for n in range(len(growths)):
+                    for m in range(len(patches)):
+                        eb[n][m].append(fid_eb[n][m][i])
+                        d_eb[n][m].append(std_fid_eb[n][m][i])
+                sb.append(fid_sb[i])
+                d_sb.append(std_fid_sb[i])
         for n, growth in enumerate(growths):
             for m, patch in enumerate(patches):
                 line_style_index = (n * len(patches) + m) % len(line_styles)
@@ -142,11 +157,14 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
     elif rate == "skf":
         ax.set_ylabel("Secret key fraction")
         name = "SKF"
-    else:
+    elif rate == "rr":
         ax.set_ylabel("Raw rate [Hz]")
         ax.set_ylim(bottom=0.99, top=5e5)
         ax.set_yscale("log")
         name = "RR"
+    else:
+        ax.set_ylabel("Fidelity")
+        name = "FID"
     ax.set_xlim(left=-80000, right=2200000)
     # Set title.
     # bbox = dict(facecolor="white", edgecolor="black", boxstyle='round,pad=0.3')
@@ -173,13 +191,15 @@ def plot_data(p, dephasing_time, total_distances, ks, growths, patches, rate="sk
 
 if __name__ == "__main__":
     # PARAMETERS
-    num_points = 50
+    # num_points = 50
+    num_points = 10
     total_distances = np.linspace(1e3, 2200000, num=num_points)  # meters
-    ks = [6, 7, 8, 9]
+    # ks = [6, 7, 8, 9]
+    ks = [3, 4]
     dephasing_times = [10]  # seconds
     growths = [1, 2]
     patches = [4]
 
     # PLOT DATA
     plot_data(p=0.5, dephasing_time=10, ks=ks, total_distances=total_distances, growths=growths, patches=patches,
-              rate="skr", num=num_points, save=False, path='results/')
+              rate="fid", num=num_points, save=False, path='results/')

@@ -16,7 +16,7 @@ line_width = 1.5
 marker_size = 7
 
 
-def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, save=False, path=''):
+def plot_data(p, dephasing_times, total_distance, ks, growths, patches, rate="skr", num=50, save=False, path=''):
     """This function plots the averaged data of the chosen rate (secret ket rate, secret key fraction or raw rate),
     given a set of total distances for both the merging-based and the swap-based protocols.
 
@@ -34,18 +34,25 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
         List of the limits to how much a gap can grow.
     patches: list of int
         List of the limits to at what size of the cluster can the patching be attempted.
+    rate : str
+        Parameter to be plotted, can take two values:
+        "skr" --> secret key rate,
+        "fid" --> fidelity.
+        Default is "skr".
     num : int
         Number of points per data series. Default is 50.
     save : True or False
-        If True, the outcomes are saved in a .npy file. Default is False.
+        If True, the outcomes are saved in a .pdf file. Default is False.
     path : str
-        Specification on where to save the .npy file. Default is ''.
+        Specification on where to save the .pdf file. Default is ''.
     """
+    if rate != "skr" and rate != "fid":
+        raise ValueError("The entered rate is not correct")
     fig, ax = plt.subplots(figsize=[6.4, 4.8])
     # Series of different `k`.
     for j, k in enumerate(ks):
         data_sb = np.load(
-            f"results/skr_T_sb_k={k}_p={p}_td={total_distance}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}].npy")
+            f"results/skr_fid_T_sb_k={k}_p={p}_td={total_distance}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}].npy")
         dt_sb = data_sb[0]
         wt_sb = data_sb[1]
         std_wt_sb = data_sb[2]
@@ -53,6 +60,8 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
         std_ez_sb = data_sb[4]
         ex_sb = data_sb[5]
         std_ex_sb = data_sb[6]
+        fid_sb = data_sb[7]
+        std_fid_sb = data_sb[8]
         dt_eb = [[[] for __ in patches] for __ in growths]
         wt_eb = [[[] for __ in patches] for __ in growths]
         std_wt_eb = [[[] for __ in patches] for __ in growths]
@@ -60,10 +69,12 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
         std_ez_eb = [[[] for __ in patches] for __ in growths]
         ex_eb = [[[] for __ in patches] for __ in growths]
         std_ex_eb = [[[] for __ in patches] for __ in growths]
+        fid_eb = [[[] for __ in patches] for __ in growths]
+        std_fid_eb = [[[] for __ in patches] for __ in growths]
         for i, growth in enumerate(growths):
             for l, patch in enumerate(patches):
                 data_eb = np.load(
-                    f"results/skr_T_mb_k={k}_p={p}_td={total_distance}_g={growth}_plim={patch}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}].npy")
+                    f"results/skr_fid_T_mb_k={k}_p={p}_td={total_distance}_g={growth}_plim={patch}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}].npy")
                 dt_eb[i][l] = data_eb[0]
                 wt_eb[i][l] = data_eb[1]
                 std_wt_eb[i][l] = data_eb[2]
@@ -71,6 +82,8 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
                 std_ez_eb[i][l] = data_eb[4]
                 ex_eb[i][l] = data_eb[5]
                 std_ex_eb[i][l] = data_eb[6]
+                fid_eb[i][l] = data_eb[7]
+                std_fid_eb[i][l] = data_eb[8]
 
         ratio = [[[] for __ in patches] for __ in growths]
         d_ratio = [[[] for __ in patches] for __ in growths]
@@ -78,18 +91,27 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
         line_styles = ['--', '-']
 
         for i in range(num):
-            # Plot ratio of secret key rate.
-            result_sb = secret_key_rate(wt=wt_sb[i], d_wt=std_wt_sb[i], e_z=ez_sb[i], e_x=ex_sb[i],
-                                        d_e_z=std_ez_sb[i], d_e_x=std_ex_sb[i], distance=total_distance / 2 ** k)
-            for n in range(len(growths)):
-                for m in range(len(patches)):
-                    result_eb = secret_key_rate(wt=wt_eb[n][m][i], d_wt=std_wt_eb[n][m][i], e_z=ez_eb[n][m][i],
-                                                e_x=ex_eb[n][m][i], d_e_z=std_ez_eb[n][m][i], d_e_x=std_ex_eb[n][m][i],
-                                                distance=total_distance / 2 ** k)
-                    r = result_eb[0] / result_sb[0]
-                    ratio[n][m].append(r)
-                    d_ratio[n][m].append(
-                        r * np.sqrt((result_eb[0] * result_sb[1]) ** 2 + (result_sb[0] * result_eb[1]) ** 2))
+            if rate == "skr":
+                # Plot ratio of secret key rate.
+                result_sb = secret_key_rate(wt=wt_sb[i], d_wt=std_wt_sb[i], e_z=ez_sb[i], e_x=ex_sb[i],
+                                            d_e_z=std_ez_sb[i], d_e_x=std_ex_sb[i], distance=total_distance / 2 ** k)
+                for n in range(len(growths)):
+                    for m in range(len(patches)):
+                        result_eb = secret_key_rate(wt=wt_eb[n][m][i], d_wt=std_wt_eb[n][m][i], e_z=ez_eb[n][m][i],
+                                                    e_x=ex_eb[n][m][i], d_e_z=std_ez_eb[n][m][i], d_e_x=std_ex_eb[n][m][i],
+                                                    distance=total_distance / 2 ** k)
+                        r = result_eb[0] / result_sb[0]
+                        ratio[n][m].append(r)
+                        d_ratio[n][m].append(
+                            r * np.sqrt((result_eb[0] * result_sb[1]) ** 2 + (result_sb[0] * result_eb[1]) ** 2))
+            else:
+                # Plot ratio of fidelity.
+                for n in range(len(growths)):
+                    for m in range(len(patches)):
+                        r = fid_eb[n][m][i] / fid_sb[i]
+                        ratio[n][m].append(r)
+                        d_ratio[n][m].append(
+                            r * np.sqrt((fid_eb[n][m][i] * std_fid_sb[i]) ** 2 + (fid_sb[i] * std_fid_eb[n][m][i]) ** 2))
 
         for n, growth in enumerate(growths):
             for m, patch in enumerate(patches):
@@ -98,7 +120,12 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
     ax.set_xscale("log")
     # Make the x-axis in km.
     ax.set_xlabel("Dephasing time [s]")
-    ax.set_ylabel(r'S$_{\mathrm{MB}}$ / S$_{\mathrm{SB}}$')
+    if rate == "skr":
+        ax.set_ylabel(r'S$_{\mathrm{MB}}$ / S$_{\mathrm{SB}}$')
+        name = "SKR"
+    else:
+        ax.set_ylabel(r'F$_{\mathrm{MB}}$ / F$_{\mathrm{SB}}$')
+        name = "FID"
     # Set title.
     # bbox = dict(facecolor="white", edgecolor="black", boxstyle='round,pad=0.3')
     # ax.set_title(fr"$p={p_fuse}$, Total distance$={total_distance}$ m", loc="center", y=1.0, pad=-20, bbox=bbox)
@@ -117,7 +144,7 @@ def plot_data(p, dephasing_times, total_distance, ks, growths, patches, num=50, 
     ax.set_xlim(left=0.9, right=110)
     # Save or show the plot.
     if save is True:
-        fig.savefig(path + "Ratio.pdf", bbox_inches="tight")
+        fig.savefig(path + f"Ratio_{name}.pdf", bbox_inches="tight")
     else:
         plt.show()
     return
