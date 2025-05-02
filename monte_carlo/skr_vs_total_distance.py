@@ -241,15 +241,15 @@ if __name__ == "__main__":
     sys.setrecursionlimit(100000)
 
     # PARAMETERS
-    num_samples_per_point = 100000
+    num_samples_per_point = 10000
     num_points = 50
     total_distances = np.linspace(1e3, 2200000, num=num_points)  # meters
     ps = [0.5]
-    ks = [6, 7, 8]
+    ks = [9]
     dephasing_times = [10]
     growths = [1, 2]
     patches = [4]
-    pool_size = 40
+    pool_size = 10
 
     # GENERATE DATA
     generate_data(ks=ks, ps=ps, dephasing_times=dephasing_times, growths=growths, patches=patches,
