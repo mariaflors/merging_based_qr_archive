@@ -247,7 +247,7 @@ if __name__ == "__main__":
     num_points = 50
     total_distances = [500000]  # meters
     ps = [0.5]
-    ks = [9]
+    ks = [6, 7, 8, 9]
     dephasing_times = list(np.logspace(0, 2, num=num_points))  # seconds
     growths = [1, 2]
     patches = [4]

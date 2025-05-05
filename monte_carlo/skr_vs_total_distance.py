@@ -249,7 +249,7 @@ if __name__ == "__main__":
     dephasing_times = [10]
     growths = [1, 2]
     patches = [4]
-    pool_size = 10
+    pool_size = 20
 
     # GENERATE DATA
     generate_data(ks=ks, ps=ps, dephasing_times=dephasing_times, growths=growths, patches=patches,
