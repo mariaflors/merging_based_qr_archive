@@ -200,4 +200,4 @@ if __name__ == "__main__":
 
     # PLOT DATA
     plot_data(p=0.5, dephasing_time=10, ks=ks, total_distances=total_distances, growths=growths, patches=patches,
-              rate="fid", num=num_points, save=False, path='results/')
+              rate="skr", num=num_points, save=False, path='results/')
