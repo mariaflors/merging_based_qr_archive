@@ -245,7 +245,7 @@ if __name__ == "__main__":
     num_points = 50
     total_distances = np.linspace(1e3, 2200000, num=num_points)  # meters
     ps = [0.5]
-    ks = [9]
+    ks = [6, 7, 8, 9]
     dephasing_times = [10]
     growths = [1, 2]
     patches = [4]

@@ -193,7 +193,7 @@ if __name__ == "__main__":
     # PARAMETERS
     num_points = 50
     total_distances = np.linspace(1e3, 2200000, num=num_points)  # meters
-    ks = [6, 7, 8]
+    ks = [6, 7, 8, 9]
     dephasing_times = [10]  # seconds
     growths = [1, 2]
     patches = [4]
