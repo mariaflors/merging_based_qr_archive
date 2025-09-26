@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 ## Structure of the code
 There are two main folders where the code is stored, `analytical`, where there is the file that has the analytic analysis of the merging-based approach with the double distance, 
-and `monte_carlo`, where there are seven files that are used to perform the Monte Carlo simulation of both the swapping and merging based approaches of the double distance protocol:git pull
+and `monte_carlo`, where there are seven files that are used to perform the Monte Carlo simulation of both the swapping and merging based approaches of the double distance protocol:
 
 1. `swap_based.py`: Sampling function of the swapping-based approach.
 2. `merge_based.py`: Sampling functions of the merging-based approach. Described in detail in Appendix B.
