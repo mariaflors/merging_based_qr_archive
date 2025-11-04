@@ -34,20 +34,21 @@ and `monte_carlo`, where there are seven files that are used to perform the Mont
 ## Usage of the code
 Here a brief instruction on how to use the functions to replicate the results of the paper is presented.
 
-For the results presented in the main text of the paper, one must run the file `skr_vs_total_distance.py` to generate the data. 
+For the results presented in Fig.3, one must run the file `skr_vs_total_distance.py` to generate the data. 
 In the `if __name__ == "__main__"` part of the code one can edit the parameters in order to make the simulation compatible with the machine that is being used. Note that for higher `k` the computational time is longer.
-Then the file `plot_skr_vs_total_distance.py` can be run with the current parameters to plot the generated data (corresponding to Fig. 3).
+Then the file `plot_skr_vs_total_distance.py` can be run with the current parameters to plot the generated data.
+
+To replicate Fig. 4, one must change the plotting parameter in file `plot_skr_vs_total_distance.py` to `"rr"` and to `"skf"` to plot the raw rate and the secret key fraction separately. Note that the data for this plot is generated together with the data of Fig. 3.
 
 For the additional results presented in Appendix D:
-- To replicate Fig. 5, one must change the plotting parameter in file `plot_skr_vs_total_distance.py` to `"rr"` and to `"skf"` to plot the raw rate and the secret key fraction separately. Note that the data for this plot is generated together with the data of the plot of the main text.
 - To replicate Fig. 6, one must run the file `skr_vs_memory.py` to generate the data. In the `if __name__ == "__main__"` part of the code one can edit the parameters in order to make the simulation compatible with the machine that is being used. Note that for higher `k` the computational time is longer.
 Then the file `plot_skr_vs_memory.py` can be run with the current parameters to plot the generated data.
 - To replicate Fig. 7, one must run the file `skr_vs_p_merge.py` to generate the data. In the `if __name__ == "__main__"` part of the code one can edit the parameters in order to make the simulation compatible with the machine that is being used. Note that for higher `k` the computational time is longer. Then the file `plot_skr_vs_p_merge.py` can be run with the current parameters to plot the generated data. 
 
 For the additional results presented in Appendix E:
-- To replicate Fig. 8, one must change the plotting parameter in file `plot_skr_vs_total_distance.py` to `"fid"` to plot the fidelity. Note that the data for this plot is generated together with the data of the plot of the main text.
-- To replicate Fig. 9, one must run the file `skr_vs_memory.py` to generate the data. In the `if __name__ == "__main__"` part of the code one can edit the parameters in order to make the simulation compatible with the machine that is being used. Note that for higher `k` the computational time is longer.
+- To replicate Fig. 8a, one must change the plotting parameter in file `plot_skr_vs_total_distance.py` to `"fid"` to plot the fidelity. Note that the data for this plot is generated together with the data of Fig. 3 and 4.
+- To replicate Fig. 8b, one must run the file `skr_vs_memory.py` to generate the data. In the `if __name__ == "__main__"` part of the code one can edit the parameters in order to make the simulation compatible with the machine that is being used. Note that for higher `k` the computational time is longer.
 Then the file `plot_fidelity_vs_memory.py` can be run with the current parameters to plot the generated data.
-- To replicate Fig. 10, one must run `plot_skf_vs_fidelity.py` with the current parameters. Note that the data for this plot is generated together with the data of the plot of the main text.
+- To replicate Fig. 9, one must run `plot_skf_vs_fidelity.py` with the current parameters. Note that the data for this plot is generated together with the data of Fig. 3 and 4.
 
 To check the verification of the simulation using the analytic analysis, in the `if __name__ == "__main__"` part of the file `analytical/analytical_merge_based_four_segments.py` there is a code that produces a plot that verifies the behaviour of the Monte Carlo sampling.
