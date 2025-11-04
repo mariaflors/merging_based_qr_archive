@@ -1,6 +1,6 @@
 """
-This script generates the data to plot the increment ratio of secret key rate in terms of the dephasing time of the
-merging-based protocol over the swapping-based protocol.
+This script generates the data to plot the increment ratio of secret key rate or fidelity in terms of the dephasing time
+of the merging-based protocol over the swapping-based protocol.
 To obtain the data we parallelize using Pool from multiprocessing.
 """
 import numpy as np
@@ -10,14 +10,15 @@ from merge_based import wt
 import os
 from multiprocessing import Pool
 from noisy_graph_states.tools.strategies_1d import side_to_side, every_second
-from skr_tools import final_bell_pair, q_bers
+from skr_tools import final_bell_pair, q_bers, bell_pair_fidelity
 
 
 def mb_run_it(total_distance, k, p, dephasing_time, growth, patch, num_samples_per_point, cs=2e8):
-    """This function generates a point of data to compute the secret key rate for a given total distance, a
+    """This function generates a point of data to compute the secret key rate and fidelity for a given total distance, a
     probability of the merging operation and a number of segments. It computes the merging-based with the specified
     growth and patch limit.
-    It returns the waiting time and both QBERs, and the corresponding standard deviation of the mean of each parameter.
+    It returns the waiting time, both QBERs, and fidelity and the corresponding standard deviation of the mean of each
+    parameter.
 
     Parameters
     ---------
@@ -46,6 +47,8 @@ def mb_run_it(total_distance, k, p, dephasing_time, growth, patch, num_samples_p
             Fourth element is the standard deviation of the mean of the QBER in the Z basis.
             Fifth element is the mean QBER in the X basis.
             Sixth element is the standard deviation of the mean of the QBER in the X basis.
+            Seventh element is the mean fidelity.
+            Eighth element is the standard deviation of the mean of the fidelity.
     """
     # Get the internode distance.
     distance = total_distance / 2 ** k
@@ -63,26 +66,31 @@ def mb_run_it(total_distance, k, p, dephasing_time, growth, patch, num_samples_p
     # Compute averages of the waiting time.
     wt_eb = np.mean(w_times)
     std_wt_eb = np.std(w_times) / np.sqrt(num_samples_per_point)
-    # Compute averages of the QBERs.
+    # Compute averages of the QBERs and fidelity.
     e_z = []
     e_x = []
+    fidelity = []
     for qt in q_times:
         qt = [element * 2 * distance / cs for element in qt]
         state = final_bell_pair(time=qt, strategy=sts, dephasing_time=dephasing_time)
         errors = q_bers(state=state)
         e_z.append(errors[0])
         e_x.append(errors[1])
+        fidelity.append(bell_pair_fidelity(state=state))
     ez_eb = np.mean(e_z)
     std_ez_eb = np.std(e_z) / np.sqrt(num_samples_per_point)
     ex_eb = np.mean(e_x)
     std_ex_eb = np.std(e_x) / np.sqrt(num_samples_per_point)
-    return [dephasing_time, wt_eb, std_wt_eb, ez_eb, std_ez_eb, ex_eb, std_ex_eb]
+    fid_eb = np.mean(fidelity)
+    std_fid_eb = np.std(fidelity) / np.sqrt(num_samples_per_point)
+    return [dephasing_time, wt_eb, std_wt_eb, ez_eb, std_ez_eb, ex_eb, std_ex_eb, fid_eb, std_fid_eb]
 
 
 def sb_run_it(total_distance, k, p, dephasing_time, num_samples_per_point, cs=2e8):
-    """This function generates a point of data to compute the secret key rate for a given internode distance, a
-    probability of the swapping operation and a number of segments. It computes the swapping-based protocol.
-    It returns the waiting time and both QBERs, and the corresponding standard deviation of the mean of each parameter.
+    """This function generates a point of data to compute the secret key rate and fidelity for a given internode
+    distance, a probability of the swapping operation and a number of segments. It computes the swapping-based protocol.
+    It returns the waiting time, both QBERs, fidelity and the corresponding standard deviation of the mean of each
+    parameter.
 
     Parameters
     ---------
@@ -107,6 +115,8 @@ def sb_run_it(total_distance, k, p, dephasing_time, num_samples_per_point, cs=2e
             Fourth element is the standard deviation of the mean of the QBER in the Z basis.
             Fifth element is the mean QBER in the X basis.
             Sixth element is the standard deviation of the mean of the QBER in the X basis.
+            Seventh element is the mean fidelity.
+            Eighth element is the standard deviation of the mean of the fidelity.
     """
     # Get the internode distance.
     distance = total_distance / 2 ** k
@@ -124,20 +134,24 @@ def sb_run_it(total_distance, k, p, dephasing_time, num_samples_per_point, cs=2e
     # Compute averages of the waiting time.
     wt_sb = np.mean(w_times)
     std_wt_sb = np.std(w_times) / np.sqrt(num_samples_per_point)
-    # Compute averages of the QBERs.
+    # Compute averages of the QBERs and fidelity.
     e_z = []
     e_x = []
+    fidelity = []
     for qt in q_times:
         qt = [element * 2 * distance / cs for element in qt]
         state = final_bell_pair(time=qt, strategy=esq, dephasing_time=dephasing_time)
         errors = q_bers(state=state)
         e_z.append(errors[0])
         e_x.append(errors[1])
+        fidelity.append(bell_pair_fidelity(state=state))
     ez_sb = np.mean(e_z)
     std_ez_sb = np.std(e_z) / np.sqrt(num_samples_per_point)
     ex_sb = np.mean(e_x)
     std_ex_sb = np.std(e_x) / np.sqrt(num_samples_per_point)
-    return [dephasing_time, wt_sb, std_wt_sb, ez_sb, std_ez_sb, ex_sb, std_ex_sb]
+    fid_sb = np.mean(fidelity)
+    std_fid_sb = np.std(fidelity) / np.sqrt(num_samples_per_point)
+    return [dephasing_time, wt_sb, std_wt_sb, ez_sb, std_ez_sb, ex_sb, std_ex_sb, fid_sb, std_fid_sb]
 
 
 def generate_data(ks, ps, dephasing_times, growths, patches, total_distances, num_samples_per_point, pool_size=4):
@@ -198,10 +212,12 @@ def generate_data(ks, ps, dephasing_times, growths, patches, total_distances, nu
                 std_ez_sb = res_unpacked_sb[4]
                 ex_sb = res_unpacked_sb[5]
                 std_ex_sb = res_unpacked_sb[6]
+                fid_sb = res_unpacked_sb[7]
+                std_fid_sb = res_unpacked_sb[8]
                 # Save the data of the swapping-based.
                 np.save(
-                    f"results/skr_T_sb_k={k}_p={p}_td={total_distance}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}]",
-                    (dt_sb, wt_sb, std_wt_sb, ez_sb, std_ez_sb, ex_sb, std_ex_sb))
+                    f"results/skr_fid_T_sb_k={k}_p={p}_td={total_distance}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}]",
+                    (dt_sb, wt_sb, std_wt_sb, ez_sb, std_ez_sb, ex_sb, std_ex_sb, fid_sb, std_fid_sb))
                 for growth in growths:
                     for patch in patches:
                         current_res_eb = res_eb[(k, p, total_distance, growth, patch)].get()
@@ -213,10 +229,12 @@ def generate_data(ks, ps, dephasing_times, growths, patches, total_distances, nu
                         std_ez_eb = res_unpacked_eb[4]
                         ex_eb = res_unpacked_eb[5]
                         std_ex_eb = res_unpacked_eb[6]
+                        fid_eb = res_unpacked_eb[7]
+                        std_fid_eb = res_unpacked_eb[8]
                         # Save the data of the merging-based approach for a certain growth.
                         np.save(
-                            f"results/skr_T_mb_k={k}_p={p}_td={total_distance}_g={growth}_plim={patch}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}]",
-                            (dt_eb, wt_eb, std_wt_eb, ez_eb, std_ez_eb, ex_eb, std_ex_eb))
+                            f"results/skr_fid_T_mb_k={k}_p={p}_td={total_distance}_g={growth}_plim={patch}_Ts=[{dephasing_times[0]}, {dephasing_times[-1]}]",
+                            (dt_eb, wt_eb, std_wt_eb, ez_eb, std_ez_eb, ex_eb, std_ex_eb, fid_eb, std_fid_eb))
     return
 
 
@@ -225,7 +243,7 @@ if __name__ == "__main__":
     sys.setrecursionlimit(100000)
 
     # PARAMETERS
-    num_samples_per_point = 100000
+    num_samples_per_point = 10000
     num_points = 50
     total_distances = [500000]  # meters
     ps = [0.5]

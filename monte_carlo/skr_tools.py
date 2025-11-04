@@ -8,6 +8,7 @@ import math
 import noisy_graph_states as ngs
 import graphepp as gg
 import noisy_graph_states.libs.matrix as mat
+import noisy_graph_states.libs.graph as gt
 
 
 def time_noise_coefficient(time_interval, dephasing_time):
@@ -213,3 +214,25 @@ def secret_key_rate(wt, d_wt, e_z, e_x, d_e_z, d_e_x, distance, cs=2e8):
     skr = rr * skf
     d_skr = skr * np.sqrt((skf * d_rr) ** 2 + (rr * d_skf) ** 2)
     return skr, d_skr
+
+
+def bell_pair_fidelity(state):
+    """Compute the fidelity of the noisy Bell pair in the graph basis.
+
+    Parameters
+    ----------
+    state : ngs.State
+        State of a Bell pair between the ends of the chain.
+
+    Returns
+    -------
+    fidelity : int
+        Fidelity, takes values [0, 1]
+    """
+    # Get the ket of a noiseless Bell pair in the graph basis
+    noiseless_ket = gt.bell_pair_ket
+    # Number of qubits in the initial state (initial Bell pairs).
+    qubits = state.graph.N
+    # Reduced noisy density matrix of the qubits at the end nodes (the rest have been previously measured).
+    noisy_dm = ngs.noisy_bp_dm(state, [0, qubits - 1])
+    return mat.H(noiseless_ket) @ noisy_dm @ noiseless_ket
